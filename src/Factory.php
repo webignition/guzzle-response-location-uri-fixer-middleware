@@ -20,23 +20,29 @@ class Factory
                 return $response;
             }
 
-            $matches = [];
-            $invalidSchemePattern = '#[a-z]+:///#';
-
-            if (preg_match($invalidSchemePattern, $location, $matches)) {
-                $invalidScheme = $matches[0];
-                $validScheme = substr($invalidScheme, 0, -1);
-
-                $mutatedLocation = preg_replace($invalidSchemePattern, $validScheme, $location);
-
-                var_dump($location);
-                var_dump($mutatedLocation);
-
-                $response = $response->withoutHeader('location');
-                $response = $response->withHeader('location', $mutatedLocation);
-            }
+            $response = self::fixTripleSlashAfterHttpScheme($response);
 
             return $response;
         });
+    }
+
+    private static function fixTripleSlashAfterHttpScheme(ResponseInterface $response): ResponseInterface
+    {
+        $location = $response->getHeaderLine('Location');
+
+        $matches = [];
+        $invalidSchemePattern = '#[a-z]+:///#';
+
+        if (preg_match($invalidSchemePattern, $location, $matches)) {
+            $invalidScheme = $matches[0];
+            $validScheme = substr($invalidScheme, 0, -1);
+
+            $mutatedLocation = preg_replace($invalidSchemePattern, $validScheme, $location);
+
+            $response = $response->withoutHeader('location');
+            $response = $response->withHeader('location', $mutatedLocation);
+        }
+
+        return $response;
     }
 }

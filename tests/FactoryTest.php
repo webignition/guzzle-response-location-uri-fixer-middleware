@@ -14,7 +14,7 @@ use webignition\Guzzle\Middleware\ResponseLocationUriFixer\Factory;
 class FactoryTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @dataProvider executeDataProvider
+     * @dataProvider executeNoMutationDataProvider
      */
     public function testExecuteNoMutation(ResponseInterface $response)
     {
@@ -35,7 +35,7 @@ class FactoryTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($nonMutatedResponse, $response);
     }
 
-    public function executeDataProvider(): array
+    public function executeNoMutationDataProvider(): array
     {
         return [
             '200 response' => [
@@ -51,6 +51,55 @@ class FactoryTest extends \PHPUnit\Framework\TestCase
                         'Location' => 'http://example.com/redirect',
                     ]
                 ),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider executeHasMutationDataProvider
+     */
+    public function testExecuteHasMutation(ResponseInterface $response, string $expectedLocation)
+    {
+        $middleware = Factory::create();
+
+        $handlerStack = HandlerStack::create(new MockHandler([$response]));
+        $handlerStack->push($middleware);
+
+        $closure = $handlerStack->resolve();
+
+        /* @var Promise $promise */
+        $promise = $closure(
+            new Request('GET', 'http://example.com/'),
+            []
+        );
+
+        /* @var ResponseInterface $mutatedResponse */
+        $mutatedResponse = $promise->wait();
+
+        $this->assertNotSame($mutatedResponse, $response);
+        $this->assertEquals($expectedLocation, $mutatedResponse->getHeaderLine('Location'));
+    }
+
+    public function executeHasMutationDataProvider(): array
+    {
+        return [
+            '301 response with invalid http url' => [
+                'response' => new Response(
+                    301,
+                    [
+                        'Location' => 'http:///example.com/redirect',
+                    ]
+                ),
+                'expectedLocation' => 'http://example.com/redirect',
+            ],
+            '301 response with invalid https url' => [
+                'response' => new Response(
+                    301,
+                    [
+                        'Location' => 'https:///example.com/redirect',
+                    ]
+                ),
+                'expectedLocation' => 'https://example.com/redirect',
             ],
         ];
     }
