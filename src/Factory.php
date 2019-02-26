@@ -10,7 +10,7 @@ class Factory
     public static function create()
     {
         return Middleware::mapResponse(function (ResponseInterface $response) {
-            $is3xxStatusCode = '3' === substr($response->getStatusCode(), 0, 1);
+            $is3xxStatusCode = '3' === substr((string) $response->getStatusCode(), 0, 1);
             if (!$is3xxStatusCode) {
                 return $response;
             }
@@ -37,10 +37,10 @@ class Factory
             $invalidScheme = $matches[0];
             $validScheme = substr($invalidScheme, 0, -1);
 
-            $mutatedLocation = preg_replace($invalidSchemePattern, $validScheme, $location);
+            $mutatedLocation = (string) preg_replace($invalidSchemePattern, $validScheme, $location);
 
-            $response = $response->withoutHeader('location');
-            $response = $response->withHeader('location', $mutatedLocation);
+            $response = $response->withoutHeader('Location');
+            $response = $response->withHeader('Location', $mutatedLocation);
         }
 
         return $response;
