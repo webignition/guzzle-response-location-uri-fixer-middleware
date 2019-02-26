@@ -7,6 +7,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class Factory
 {
+    const LOCATION_HEADER_NAME = 'Location';
+
     public static function create()
     {
         return Middleware::mapResponse(function (ResponseInterface $response) {
@@ -15,8 +17,7 @@ class Factory
                 return $response;
             }
 
-            $location = $response->getHeaderLine('Location');
-            if (empty($location)) {
+            if (!$response->hasHeader(self::LOCATION_HEADER_NAME)) {
                 return $response;
             }
 
@@ -28,7 +29,7 @@ class Factory
 
     private static function fixTripleSlashAfterHttpScheme(ResponseInterface $response): ResponseInterface
     {
-        $location = $response->getHeaderLine('Location');
+        $location = $response->getHeaderLine(self::LOCATION_HEADER_NAME);
 
         $matches = [];
         $invalidSchemePattern = '#[a-z]+:///#';
@@ -39,8 +40,8 @@ class Factory
 
             $mutatedLocation = (string) preg_replace($invalidSchemePattern, $validScheme, $location);
 
-            $response = $response->withoutHeader('Location');
-            $response = $response->withHeader('Location', $mutatedLocation);
+            $response = $response->withoutHeader(self::LOCATION_HEADER_NAME);
+            $response = $response->withHeader(self::LOCATION_HEADER_NAME, $mutatedLocation);
         }
 
         return $response;
