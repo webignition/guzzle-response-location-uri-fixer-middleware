@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f93e1b36a7ed844d78afa6ed0d02729",
+    "content-hash": "4050686c7792c2451e604cb9e2f7fa75",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -278,6 +278,47 @@
             ],
             "description": "A polyfill for getallheaders.",
             "time": "2016-02-11T07:05:27+00:00"
+        },
+        {
+            "name": "webignition/unparseable-url-fixer",
+            "version": "0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webignition/unparseable-url-fixer.git",
+                "reference": "d24ab06143a5e41cc56e74d30445f31e65df6928"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webignition/unparseable-url-fixer/zipball/d24ab06143a5e41cc56e74d30445f31e65df6928",
+                "reference": "d24ab06143a5e41cc56e74d30445f31e65df6928",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^0.11.1",
+                "phpunit/phpunit": "^7",
+                "squizlabs/php_codesniffer": "^3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "webignition\\UnparseableUrlFixer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Applies some fixes to otherwise-unparseable URLs to make them parseable",
+            "homepage": "https://github.com/webignition/unparseable-url-fixer",
+            "keywords": [
+                "fixer",
+                "parse",
+                "url"
+            ],
+            "time": "2019-02-27T13:02:57+00:00"
         }
     ],
     "packages-dev": [

@@ -28,7 +28,8 @@
     "require": {
         "php": ">=7.2.0",
         "guzzlehttp/guzzle": "^6",
-        "psr/http-message": "^1"
+        "psr/http-message": "^1",
+        "webignition/unparseable-url-fixer": ">=0.1,<1"
     },
     "require-dev": {
         "phpunit/phpunit": "^7",
