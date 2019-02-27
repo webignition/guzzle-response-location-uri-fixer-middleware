@@ -14,23 +14,40 @@ use webignition\Guzzle\Middleware\ResponseLocationUriFixer\Factory;
 class FactoryTest extends \PHPUnit\Framework\TestCase
 {
     /**
+     * @var HandlerStack
+     */
+    private $handlerStack;
+
+    /**
+     * @var MockHandler
+     */
+    private $mockHandler;
+
+    /**
+     * @var callable
+     */
+    private $middleware;
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $factory = new Factory();
+
+        $this->mockHandler = new MockHandler();
+        $this->middleware = $factory->create();
+
+        $this->handlerStack = HandlerStack::create($this->mockHandler);
+        $this->handlerStack->push($this->middleware);
+    }
+
+    /**
      * @dataProvider executeNoMutationDataProvider
      */
     public function testExecuteNoMutation(ResponseInterface $response)
     {
-        $middleware = Factory::create();
-
-        $handlerStack = HandlerStack::create(new MockHandler([$response]));
-        $handlerStack->push($middleware);
-
-        $closure = $handlerStack->resolve();
-
-        /* @var Promise $promise */
-        $promise = $closure(
-            new Request('GET', 'http://example.com/'),
-            []
-        );
-        $nonMutatedResponse = $promise->wait();
+        $this->mockHandler->append($response);
+        $nonMutatedResponse = $this->getResponse();
 
         $this->assertSame($nonMutatedResponse, $response);
     }
@@ -60,21 +77,8 @@ class FactoryTest extends \PHPUnit\Framework\TestCase
      */
     public function testExecuteHasMutation(ResponseInterface $response, string $expectedLocation)
     {
-        $middleware = Factory::create();
-
-        $handlerStack = HandlerStack::create(new MockHandler([$response]));
-        $handlerStack->push($middleware);
-
-        $closure = $handlerStack->resolve();
-
-        /* @var Promise $promise */
-        $promise = $closure(
-            new Request('GET', 'http://example.com/'),
-            []
-        );
-
-        /* @var ResponseInterface $mutatedResponse */
-        $mutatedResponse = $promise->wait();
+        $this->mockHandler->append($response);
+        $mutatedResponse = $this->getResponse();
 
         $this->assertNotSame($mutatedResponse, $response);
         $this->assertEquals($expectedLocation, $mutatedResponse->getHeaderLine('Location'));
@@ -102,5 +106,18 @@ class FactoryTest extends \PHPUnit\Framework\TestCase
                 'expectedLocation' => 'https://example.com/redirect',
             ],
         ];
+    }
+
+    private function getResponse(): ResponseInterface
+    {
+        $closure = $this->handlerStack->resolve();
+
+        /* @var Promise $promise */
+        $promise = $closure(
+            new Request('GET', 'http://example.com/'),
+            []
+        );
+
+        return $promise->wait();
     }
 }

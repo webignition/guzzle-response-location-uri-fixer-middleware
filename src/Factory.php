@@ -10,7 +10,7 @@ class Factory
 {
     const LOCATION_HEADER_NAME = 'Location';
 
-    public static function create()
+    public function create()
     {
         return Middleware::mapResponse(function (ResponseInterface $response) {
             $is3xxStatusCode = '3' === substr((string) $response->getStatusCode(), 0, 1);
