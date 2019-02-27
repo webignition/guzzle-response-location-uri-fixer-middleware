@@ -32,8 +32,10 @@ class FactoryTest extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
+        $factory = new Factory();
+
         $this->mockHandler = new MockHandler();
-        $this->middleware = Factory::create();
+        $this->middleware = $factory->create();
 
         $this->handlerStack = HandlerStack::create($this->mockHandler);
         $this->handlerStack->push($this->middleware);
