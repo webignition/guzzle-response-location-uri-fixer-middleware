@@ -4,6 +4,7 @@ namespace webignition\Guzzle\Middleware\ResponseLocationUriFixer;
 
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\ResponseInterface;
+use webignition\UnparseableUrlFixer\UnparseableUrlFixer;
 
 class Factory
 {
@@ -21,29 +22,17 @@ class Factory
                 return $response;
             }
 
-            $response = self::fixTripleSlashAfterHttpScheme($response);
+            $location = $response->getHeaderLine(self::LOCATION_HEADER_NAME);
+
+            $unparseableUrlFixer = new UnparseableUrlFixer();
+            $mutatedLocation = $unparseableUrlFixer->fix($location);
+
+            if ($mutatedLocation !== $location) {
+                $response = $response->withoutHeader(self::LOCATION_HEADER_NAME);
+                $response = $response->withHeader(self::LOCATION_HEADER_NAME, $mutatedLocation);
+            }
 
             return $response;
         });
-    }
-
-    private static function fixTripleSlashAfterHttpScheme(ResponseInterface $response): ResponseInterface
-    {
-        $location = $response->getHeaderLine(self::LOCATION_HEADER_NAME);
-
-        $matches = [];
-        $invalidSchemePattern = '#[a-z]+:///#';
-
-        if (preg_match($invalidSchemePattern, $location, $matches)) {
-            $invalidScheme = $matches[0];
-            $validScheme = substr($invalidScheme, 0, -1);
-
-            $mutatedLocation = (string) preg_replace($invalidSchemePattern, $validScheme, $location);
-
-            $response = $response->withoutHeader(self::LOCATION_HEADER_NAME);
-            $response = $response->withHeader(self::LOCATION_HEADER_NAME, $mutatedLocation);
-        }
-
-        return $response;
     }
 }
